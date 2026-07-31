@@ -125,7 +125,7 @@ export class OpenAIProvider implements ModelProvider {
     }
 
     let text = "";
-    const toolCallsById = new Map<string, { name: string; args: string }>();
+    const toolCallsById = new Map<string, { id: string; name: string; args: string }>();
     const usage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
 
     for await (const line of readSSELines(res.body)) {
@@ -143,10 +143,12 @@ export class OpenAIProvider implements ModelProvider {
       }
       if (delta?.tool_calls) {
         for (const tc of delta.tool_calls) {
-          const existing = toolCallsById.get(tc.id ?? tc.index?.toString() ?? "0") ?? { name: "", args: "" };
+          const key = tc.index !== undefined ? String(tc.index) : (tc.id ?? "0");
+          const existing = toolCallsById.get(key) ?? { id: tc.id ?? "", name: "", args: "" };
+          if (tc.id) existing.id = tc.id;
           if (tc.function?.name) existing.name += tc.function.name;
           if (tc.function?.arguments) existing.args += tc.function.arguments;
-          toolCallsById.set(tc.id ?? tc.index?.toString() ?? "0", existing);
+          toolCallsById.set(key, existing);
         }
       }
       if (json.usage) {
@@ -158,7 +160,7 @@ export class OpenAIProvider implements ModelProvider {
 
     const toolCalls: ToolCallRequest[] = [];
     for (const [id, tc] of toolCallsById.entries()) {
-      const call: ToolCallRequest = { callId: id, toolName: tc.name, input: safeJsonParse(tc.args) };
+      const call: ToolCallRequest = { callId: tc.id || `call_${id}`, toolName: tc.name, input: safeJsonParse(tc.args) };
       toolCalls.push(call);
       yield { type: "tool_call", call };
     }
