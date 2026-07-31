@@ -71,19 +71,27 @@ export async function startRepl(router: Agent<string>, runner: Runner, options: 
         approvalHandler: onApproval,
       });
 
-      let currentAgent = router.name;
+      let currentStreamedAgent: string | null = null;
       let printedAnyText = false;
 
       for await (const evt of events) {
         switch (evt.type) {
           case "text_delta": {
             const p = evt.payload as any;
-            currentAgent = p.agentName;
-            printAssistant(p.agentName, p.delta);
+            if (currentStreamedAgent !== p.agentName) {
+              if (currentStreamedAgent !== null) process.stdout.write("\n");
+              process.stdout.write(`${chalk.magentaBright(`\n${p.agentName}`)} ${chalk.gray("›")} `);
+              currentStreamedAgent = p.agentName;
+            }
+            process.stdout.write(p.delta);
             printedAnyText = true;
             break;
           }
           case "tool_started": {
+            if (currentStreamedAgent !== null) {
+              process.stdout.write("\n");
+              currentStreamedAgent = null;
+            }
             const p = evt.payload as any;
             printToolStart(p.toolName, p.input);
             break;
@@ -99,6 +107,10 @@ export async function startRepl(router: Agent<string>, runner: Runner, options: 
             break;
           }
           case "handoff_started": {
+            if (currentStreamedAgent !== null) {
+              process.stdout.write("\n");
+              currentStreamedAgent = null;
+            }
             const p = evt.payload as any;
             printHandoff(p.fromAgent, p.toAgent);
             break;
@@ -118,9 +130,13 @@ export async function startRepl(router: Agent<string>, runner: Runner, options: 
         }
       }
 
+      if (currentStreamedAgent !== null) {
+        process.stdout.write("\n");
+      }
+
       const finalResult = await result;
       if (!printedAnyText) {
-        printAssistant(currentAgent, String(finalResult.finalOutput));
+        printAssistant(finalResult.agentName, String(finalResult.finalOutput));
       }
       if (options.trace) {
         printTrace(finalResult.trace.toPrettyString());

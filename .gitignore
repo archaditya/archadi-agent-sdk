@@ -5,3 +5,15 @@ dist/
 workspace/
 *.log
 .DS_Store
+
+# documentation
+docs-dist/
+
+# tests & examples
+node_modules/
+.turbo/
+coverage/
+
+# build outputs
+dist/
+coverage/
