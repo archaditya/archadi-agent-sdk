@@ -31,7 +31,7 @@ export type {
   ToolSpec,
   TokenUsage,
 } from "./providers/ModelProvider";
-export { withRetry, withTimeout, generateWithFallback, DEFAULT_RETRY } from "./providers/resilience";
+export { withRetry, withTimeout, generateWithFallback, streamWithFallback, DEFAULT_RETRY } from "./providers/resilience";
 export type { RetryConfig, FallbackTarget } from "./providers/resilience";
 
 export {
@@ -39,6 +39,7 @@ export {
   FileSessionStore,
 } from "./memory/SessionStore";
 export type { SessionStore } from "./memory/SessionStore";
+export { SqliteSessionStore } from "./memory/SqliteSessionStore";
 export { Mem0Memory, SimpleLongTermMemory } from "./memory/LongTermMemory";
 export type { LongTermMemory, Mem0MemoryConfig } from "./memory/LongTermMemory";
 
@@ -47,6 +48,7 @@ export {
   blocklistGuardrail,
   piiRedactionGuardrail,
   dangerousToolGuardrail,
+  contentModerationGuardrail,
 } from "./guardrails/Guardrail";
 export type {
   InputGuardrail,
@@ -55,6 +57,7 @@ export type {
   GuardrailResult,
   GuardrailContext,
   ApprovalHandler,
+  ContentModerationConfig,
 } from "./guardrails/Guardrail";
 
 export { Handoff, defineHandoff, HandoffGuard } from "./handoff/Handoff";

@@ -51,3 +51,26 @@ const noProfanity: InputGuardrail = {
 ```
 
 Every guardrail check is also recorded as a `guardrail` span in the trace, and emits a `guardrail_triggered` event when it blocks or modifies something.
+
+## LLM-powered content moderation
+For nuanced safety checks that go beyond regex patterns, use the built-in LLM-based guardrail. It sends the content to a (typically cheap/fast) model for evaluation:
+
+```ts
+import { contentModerationGuardrail, ProviderRegistry } from "archadi-agent";
+const moderation = contentModerationGuardrail({
+  provider: ProviderRegistry.instance().get("openai"),
+  model: "gpt-4o-mini",                    // use a fast/cheap model for cost-efficiency
+  // policy: "Custom safety policy here..." // optional — defaults to a general content-safety policy
+});
+const agent = Agent.builder()
+  .name("Assistant")
+  .instructions("...")
+  .model(target)
+  .inputGuardrail(moderation)    // checks user input before the loop
+  .outputGuardrail(moderation)   // checks the final answer before returning
+  .build();
+```
+
+Design choice — fail-open: if the moderation model call itself fails (network error, timeout), the content is allowed through rather than blocking the user. This prioritizes availability over strictness and avoids a single model outage from taking down your entire application. Override this behavior by wrapping with custom error handling.
+
+---

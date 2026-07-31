@@ -92,6 +92,7 @@ export class OpenAIProvider implements ModelProvider {
       method: "POST",
       headers: this.headers(),
       body: JSON.stringify(this.buildBody(request, false)),
+      signal: request.signal,
     });
     if (!res.ok) {
       const body = await res.text().catch(() => "");
@@ -116,6 +117,7 @@ export class OpenAIProvider implements ModelProvider {
       method: "POST",
       headers: this.headers(),
       body: JSON.stringify(this.buildBody(request, true)),
+      signal: request.signal,
     });
     if (!res.ok || !res.body) {
       const body = await res.text().catch(() => "");

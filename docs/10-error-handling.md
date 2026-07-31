@@ -41,3 +41,27 @@ try {
 - A **provider** failing retries with backoff, then falls through the fallback chain, before the run ultimately fails.
 - Every failure still produces a `Trace` (`status: "failed"`, with the error recorded) and a `run_failed` event — nothing fails silently.
 - API keys are read only from environment variables / explicit config objects passed by the host app; the SDK never logs them and only ever sends them in the `Authorization`/`x-api-key` header of the relevant provider's request.
+
+
+## Cancelling a run with AbortSignal
+
+Pass a standard `AbortSignal` to cancel an in-flight run. The signal is threaded through to the underlying provider HTTP calls, so the actual network request is cancelled — not just ignored:
+
+```ts
+const controller = new AbortController();
+
+// Cancel after 10 seconds
+setTimeout(() => controller.abort(), 10_000);
+
+try {
+  await runner.run(agent, "Write a very long essay...", {
+    signal: controller.signal,
+  });
+} catch (err) {
+  if (err instanceof ProviderError && err.message.includes("aborted")) {
+    console.log("Run was cancelled");
+  }
+}
+```
+
+The signal is also available inside tool implementations via ctx.signal, so long-running tools can cooperatively check for cancellation.

@@ -1,8 +1,8 @@
 # Streaming & Tracing
 
-## Streaming events
+## Real token-by-token streaming
 
-`runner.runStream(agent, input, options)` returns immediately with an async-iterable event stream, plus a promise for the final result (same shape as `runner.run()`):
+`runner.runStream(agent, input, options)` returns immediately with an async-iterable event stream, plus a promise for the final result (same shape as `runner.run()`). Text deltas arrive in real-time as the model generates tokens — the Runner calls `provider.stream()` under the hood for genuine token-level delivery, not buffered chunks:
 
 ```ts
 const { events, result } = runner.runStream(agent, "tell me a story");

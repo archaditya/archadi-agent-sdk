@@ -47,6 +47,8 @@ export interface ModelRequest {
   responseSchema?: Record<string, unknown>;
   temperature?: number;
   maxTokens?: number;
+  /** If set, providers forward this to their HTTP calls so in-flight requests can be cancelled. */
+  signal?: AbortSignal;
 }
 
 export interface ModelResponse {

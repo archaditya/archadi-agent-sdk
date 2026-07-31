@@ -11,9 +11,9 @@ import {
 import { AgentEventBus, eventBusToAsyncIterable } from "../events/AgentEvents";
 import { ApprovalHandler, GuardrailContext } from "../guardrails/Guardrail";
 import { HandoffGuard } from "../handoff/Handoff";
-import { ChatMessage, ToolCallRequest, ToolSpec } from "../providers/ModelProvider";
+import { ChatMessage, ModelResponse, ToolCallRequest, ToolSpec } from "../providers/ModelProvider";
 import { ProviderRegistry } from "../providers/ProviderRegistry";
-import { FallbackTarget, generateWithFallback } from "../providers/resilience";
+import { FallbackTarget, generateWithFallback, streamWithFallback } from "../providers/resilience";
 import { Trace } from "../tracing/Tracer";
 import { Tracer } from "../tracing/Tracer";
 import { ToolContext } from "../tools/Tool";
@@ -163,27 +163,45 @@ export class Runner {
 
         const modelSpanId = trace.startSpan("model_call", `turn_${turn}`, { agent: activeAgent.name });
 
-        const { response, usedProvider, usedModel } = await generateWithFallback(
-          targets,
-          {
-            messages,
-            tools: toolSpecs.length > 0 ? toolSpecs : undefined,
-            responseSchema: toolSpecs.length === 0 ? responseSchema : undefined,
-            temperature: activeAgent.temperature,
-            maxTokens: activeAgent.maxTokens,
-          },
-          (providerName, attempt, maxAttempts, err) => {
-            trace.startSpan("retry", providerName, { attempt, maxAttempts, error: String(err) });
-            bus.emit("retry", { runId, attempt, maxAttempts, reason: providerName });
-          }
-        );
+        const requestPayload = {
+          messages,
+          tools: toolSpecs.length > 0 ? toolSpecs : undefined,
+          responseSchema: toolSpecs.length === 0 ? responseSchema : undefined,
+          temperature: activeAgent.temperature,
+          maxTokens: activeAgent.maxTokens,
+          signal: options.signal,
+        };
+
+        const onRetryHandler = (providerName: string, attempt: number, maxAttempts: number, err: unknown) => {
+          trace.startSpan("retry", providerName, { attempt, maxAttempts, error: String(err) });
+          bus.emit("retry", { runId, attempt, maxAttempts, reason: providerName });
+        };
+
+        let response: ModelResponse;
+        let usedProvider: string;
+        let usedModel: string;
+
+        if (stream) {
+          // ── Real token-by-token streaming via provider.stream() ──
+          const result = await streamWithFallback(
+            targets,
+            requestPayload,
+            (delta) => bus.emit("text_delta", { runId, agentName: activeAgent.name, delta }),
+            onRetryHandler
+          );
+          response = result.response;
+          usedProvider = result.usedProvider;
+          usedModel = result.usedModel;
+        } else {
+          // ── Standard non-streaming via provider.generate() ──
+          const result = await generateWithFallback(targets, requestPayload, onRetryHandler);
+          response = result.response;
+          usedProvider = result.usedProvider;
+          usedModel = result.usedModel;
+        }
 
         trace.endSpan(modelSpanId, { usedProvider, usedModel, tokens: response.usage });
         trace.recordTokenUsage(response.usage);
-
-        if (stream && response.text) {
-          bus.emit("text_delta", { runId, agentName: activeAgent.name, delta: response.text });
-        }
 
         const assistantMessage: ChatMessage = {
           role: "assistant",

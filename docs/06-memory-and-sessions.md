@@ -64,3 +64,42 @@ Each `run()` call:
 1. Loads the session transcript (`sessionStore.getHistory`) and prepends it to the prompt.
 2. Recalls relevant long-term facts (`longTermMemory.recall`) and injects them into the system message.
 3. After a successful run, appends the new turn to the session store and long-term memory (`longTermMemory.remember`).
+
+
+## SQLite storage
+
+For production durability without running a separate database server, use the built-in SQLite adapter:
+
+```bash
+npm install better-sqlite3
+```
+
+```ts
+import { SqliteSessionStore } from "archadi-agent";
+
+const sessionStore = new SqliteSessionStore("./data/sessions.db");
+
+const agent = Agent.builder()
+  .name("Assistant")
+  .instructions("...")
+  .model(target)
+  .sessionStore(sessionStore)
+  .build();
+```
+
+The SQLite store auto-creates the database file and table on first use, uses WAL mode for performance, and wraps batch writes in transactions. Call sessionStore.close() during graceful shutdown.
+
+
+## Custom storage adapters
+Implement the SessionStore interface to back sessions with Redis, Postgres, DynamoDB, or anything else:
+
+```ts
+class RedisSessionStore implements SessionStore {
+  async getHistory(sessionId: string): Promise<ChatMessage[]> { /* ... */ }
+  async appendMessages(sessionId: string, messages: ChatMessage[]): Promise<void> { /* ... */ }
+  async clear(sessionId: string): Promise<void> { /* ... */ }
+  async listSessions(): Promise<string[]> { /* ... */ }
+}
+```
+
+---

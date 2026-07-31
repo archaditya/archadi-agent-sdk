@@ -10,6 +10,9 @@
   ],
   "scripts": {
     "build": "npm run build --workspace=packages/core && npm run build --workspace=packages/cli",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "chat": "node packages/cli/dist/cli.js chat",
     "dev": "tsx packages/cli/src/cli.ts chat",
     "cli": "node packages/cli/dist/cli.js",
@@ -17,6 +20,7 @@
   },
   "devDependencies": {
     "tsx": "^4.16.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitepress": "^1.6.4"
   }
 }

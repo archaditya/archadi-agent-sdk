@@ -68,6 +68,7 @@ export class GeminiProvider implements ModelProvider {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(this.buildBody(request)),
+      signal: request.signal,
     });
     if (!res.ok) {
       const body = await res.text().catch(() => "");
@@ -98,6 +99,7 @@ export class GeminiProvider implements ModelProvider {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(this.buildBody(request)),
+      signal: request.signal,
     });
     if (!res.ok || !res.body) {
       const body = await res.text().catch(() => "");
