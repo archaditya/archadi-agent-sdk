@@ -3,7 +3,7 @@
 ## Setup
 
 ```bash
-git clone <repo-url> && cd archadi-agent-sdk
+git clone https://github.com/archaditya/archadi-agent-sdk.git && cd archadi-agent-sdk
 npm install
 npm run build
 cp .env.example .env   # fill in at least one API key
