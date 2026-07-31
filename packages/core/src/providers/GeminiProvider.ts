@@ -57,7 +57,7 @@ export class GeminiProvider implements ModelProvider {
         responseSchema: request.responseSchema,
       },
       tools: request.tools?.length
-        ? [{ functionDeclarations: request.tools.map((t) => ({ name: t.name, description: t.description, parameters: t.parameters })) }]
+        ? [{ functionDeclarations: request.tools.map((t) => ({ name: t.name, description: t.description, parameters: sanitizeForGemini(t.parameters) })) }]
         : undefined,
     };
   }
@@ -153,5 +153,23 @@ export class GeminiProvider implements ModelProvider {
     }
 
     yield { type: "done", response: { text, toolCalls, usage } };
+  }
+}
+
+function sanitizeForGemini(schema: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
+  if (!schema || typeof schema !== "object") return schema;
+  const clone = JSON.parse(JSON.stringify(schema));
+  cleanObject(clone);
+  return clone;
+}
+
+function cleanObject(obj: any): void {
+  if (!obj || typeof obj !== "object") return;
+  delete obj.additionalProperties;
+  delete obj.$schema;
+  for (const key of Object.keys(obj)) {
+    if (typeof obj[key] === "object") {
+      cleanObject(obj[key]);
+    }
   }
 }
