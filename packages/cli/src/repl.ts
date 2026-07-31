@@ -43,11 +43,15 @@ export async function startRepl(router: Agent<string>, runner: Runner, options: 
 
   console.log(banner());
   printSystem(
-    `session: ${options.sessionId}  |  provider: ${options.providerLabel}  |  trace: ${options.trace ? "on" : "off"}  |  memory: ${
-      router.longTermMemory ? "on" : "off"
-    }`
+    [
+      `  ● Active Session : ${chalk.cyanBright(options.sessionId)}`,
+      `  ● Model Provider : ${chalk.greenBright(options.providerLabel)}`,
+      `  ● Run Tracing    : ${options.trace ? chalk.yellowBright("ON") : chalk.gray("OFF")}`,
+      `  ● Long-Memory    : ${router.longTermMemory ? chalk.greenBright("ON") : chalk.gray("OFF")}`,
+      "",
+      `  Type ${chalk.cyan("/help")} for available commands. Try: "what's the weather in Goa" or "write a hello world in c++ and run it".\n`,
+    ].join("\n")
   );
-  printSystem("Type /help to see commands. Try: \"what's the weather in Goa\" or \"write a hello world in c++ and run it\".\n");
 
   const onApproval = approvalHandler(rl);
 
@@ -58,7 +62,7 @@ export async function startRepl(router: Agent<string>, runner: Runner, options: 
     if (!line) return rl.prompt();
 
     if (line.startsWith("/")) {
-      handleCommand(line, options);
+      await handleCommand(line, options, router);
       return rl.prompt();
     }
 
@@ -155,32 +159,77 @@ export async function startRepl(router: Agent<string>, runner: Runner, options: 
   });
 }
 
-function handleCommand(line: string, options: ReplOptions): void {
+async function handleCommand(line: string, options: ReplOptions, router: Agent<string>): Promise<void> {
   const [cmd, ...rest] = line.slice(1).split(/\s+/);
+  const targetSession = rest[0];
+
   switch (cmd) {
     case "help":
       printSystem(
         [
           "Commands:",
-          "  /help            show this message",
-          "  /trace           toggle run tracing output",
-          "  /session         show current session id",
-          "  /exit            quit",
+          "  /help                 show this help menu",
+          "  /session              show current active session ID",
+          "  /sessions             list all saved session IDs from store",
+          "  /switch <sessionId>   switch active conversation session",
+          "  /new                  start a brand new session",
+          "  /clear                clear history of current active session",
+          "  /trace                toggle execution trace output",
+          "  /exit                 quit CLI",
         ].join("\n")
       );
       break;
     case "trace":
       options.trace = !options.trace;
-      printSystem(`trace is now ${options.trace ? "on" : "off"}`);
+      printSystem(`Execution tracing is now ${options.trace ? "ON" : "OFF"}`);
       break;
     case "session":
-      printSystem(`current session id: ${options.sessionId}`);
+      printSystem(`Active session ID: ${options.sessionId}`);
       break;
+    case "sessions": {
+      if (!router.sessionStore) {
+        printSystem("No session store registered.");
+        break;
+      }
+      const list = await router.sessionStore.listSessions();
+      if (list.length === 0) {
+        printSystem("No stored sessions found.");
+      } else {
+        printSystem(
+          ["Stored Sessions:", ...list.map((s) => `  ${s === options.sessionId ? chalk.cyanBright(`* ${s} (active)`) : `  ${s}`}`)].join("\n")
+        );
+      }
+      break;
+    }
+    case "switch": {
+      if (!targetSession) {
+        printSystem("Usage: /switch <sessionId>");
+        break;
+      }
+      options.sessionId = targetSession;
+      printSystem(`Switched active session to: ${chalk.cyanBright(options.sessionId)}`);
+      break;
+    }
+    case "new": {
+      const crypto = require("node:crypto");
+      options.sessionId = `cli-${crypto.randomUUID().slice(0, 8)}`;
+      printSystem(`Started new session: ${chalk.cyanBright(options.sessionId)}`);
+      break;
+    }
+    case "clear": {
+      if (!router.sessionStore) {
+        printSystem("No session store registered.");
+        break;
+      }
+      await router.sessionStore.clear(options.sessionId);
+      printSystem(`Cleared session history for: ${options.sessionId}`);
+      break;
+    }
     case "exit":
     case "quit":
       process.exit(0);
       break;
     default:
-      printSystem(`unknown command: /${cmd}. Type /help.`);
+      printSystem(`Unknown command: /${cmd}. Type /help for options.`);
   }
 }
