@@ -1,0 +1,31 @@
+{
+  "name": "archadi-agent",
+  "version": "0.1.0",
+  "description": "ArchadiAgent — an original, provider-agnostic TypeScript SDK for building tool-using, multi-agent LLM systems with guardrails, memory, tracing and structured output.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "author": "Aditya Kumar Kushwaha",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "peerDependencies": {
+    "better-sqlite3": ">=9.0.0"
+  },
+  "peerDependenciesMeta": {
+    "better-sqlite3": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "@types/node": "^20.14.10"
+  },
+  "keywords": ["ai", "agent", "sdk", "llm", "tools", "orchestration"]
+}

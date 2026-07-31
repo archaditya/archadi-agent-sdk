@@ -1,0 +1,28 @@
+{
+  "name": "archadi-cli",
+  "version": "0.1.0",
+  "description": "Interactive terminal client for ArchadiAgent — run agents, watch tool calls, trace runs, all from the CLI.",
+  "main": "dist/cli.js",
+  "type": "commonjs",
+  "bin": {
+    "archadi": "dist/cli.js"
+  },
+  "author": "Aditya Kumar Kushwaha",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node -e \"require('fs').chmodSync('dist/cli.js', 0o755)\"",
+    "dev": "tsx src/cli.ts chat",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "archadi-agent": "0.1.0",
+    "axios": "^1.7.4",
+    "chalk": "^4.1.2",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "typescript": "^5.5.4"
+  }
+}

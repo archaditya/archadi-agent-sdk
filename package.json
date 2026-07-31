@@ -1,0 +1,22 @@
+{
+  "name": "archadi-agent-sdk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ArchadiAgent — an original agent SDK (built from scratch) plus a CLI you can run by forking this repo.",
+  "author": "Aditya Kumar Kushwaha",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=packages/core && npm run build --workspace=packages/cli",
+    "chat": "node packages/cli/dist/cli.js chat",
+    "dev": "tsx packages/cli/src/cli.ts chat",
+    "cli": "node packages/cli/dist/cli.js",
+    "typecheck": "npm run typecheck --workspace=packages/core && npm run typecheck --workspace=packages/cli"
+  },
+  "devDependencies": {
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.4"
+  }
+}
