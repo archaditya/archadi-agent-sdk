@@ -7,7 +7,7 @@
 
 Built from first principles by **Aditya Kumar Kushwaha**.
 
-- 📖 **Documentation & Live Portal:** [archadi-agent-sdk.vercel.app](https://archadi-agent-sdk.vercel.app)
+- 📖 **Documentation & Live Portal:** [ai-agent-sdk.archadi.dev](https://ai-agent-sdk.archadi.dev)
 - 🐙 **GitHub Repository:** [github.com/archaditya/archadi-agent-sdk](https://github.com/archaditya/archadi-agent-sdk)
 
 ---
@@ -100,7 +100,7 @@ const routerAgent = Agent.builder()
 ## Documentation
 
 Full documentation, code examples, and API reference available at:
-👉 **[archadi-agent-sdk.vercel.app](https://archadi-agent-sdk.vercel.app)**
+👉 **[ai-agent-sdk.archadi.dev](https://ai-agent-sdk.archadi.dev)**
 
 ---
 
