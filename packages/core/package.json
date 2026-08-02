@@ -1,12 +1,20 @@
 {
   "name": "archadi-agent",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "ArchadiAgent — an original, provider-agnostic TypeScript SDK for building tool-using, multi-agent LLM systems with guardrails, memory, tracing and structured output.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "commonjs",
   "author": "Aditya Kumar Kushwaha",
   "license": "MIT",
+  "homepage": "https://archadi-agent-sdk.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/archaditya/archadi-agent-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/archaditya/archadi-agent-sdk/issues"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
