@@ -5,6 +5,9 @@
   "description": "ArchadiAgent — an original agent SDK (built from scratch) plus a CLI you can run by forking this repo.",
   "author": "Aditya Kumar Kushwaha",
   "license": "MIT",
+  "engines": {
+    "node": ">=22.23.4"
+  },
   "workspaces": [
     "packages/*"
   ],
@@ -19,6 +22,7 @@
     "typecheck": "npm run typecheck --workspace=packages/core && npm run typecheck --workspace=packages/cli"
   },
   "devDependencies": {
+    "@types/node": "^22.13.0",
     "tsx": "^4.16.2",
     "typescript": "^5.5.4",
     "vitepress": "^1.6.4"
